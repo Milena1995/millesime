@@ -27,7 +27,7 @@ avec exactement ces clés : nom, type_vin, region, millesime, cepage.
 - Ne renvoie rien d'autre que le JSON (pas de texte, pas de markdown).`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-flash-latest",
     contents: [
       {
         role: "user",
@@ -77,7 +77,7 @@ Mise en scène obligatoire, identique à chaque génération :
 - Style épuré, élégant, cohérent avec une esthétique "chic, sobre, intemporelle"`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-image",
+    model: "gemini-3.1-flash-image",
     contents: [
       {
         role: "user",
@@ -115,7 +115,7 @@ dans un ton élégant et sobre. Renvoie UNIQUEMENT un tableau JSON de 3 chaînes
 sans texte ni markdown autour.`;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-flash-latest",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
     config: { responseMimeType: "application/json" },
   });
