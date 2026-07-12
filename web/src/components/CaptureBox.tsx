@@ -4,10 +4,11 @@ import { useRef, useState } from "react";
 
 type CaptureBoxProps = {
   label: string;
+  optional?: boolean;
   onCapture: (file: File) => void;
 };
 
-export default function CaptureBox({ label, onCapture }: CaptureBoxProps) {
+export default function CaptureBox({ label, optional, onCapture }: CaptureBoxProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -31,6 +32,7 @@ export default function CaptureBox({ label, onCapture }: CaptureBoxProps) {
         <>
           <span className="text-3xl">📷</span>
           <span className="text-sm font-medium">{label}</span>
+          {optional && <span className="text-xs text-taupe/70">(optionnel)</span>}
         </>
       )}
       <input

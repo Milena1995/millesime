@@ -15,8 +15,8 @@ export async function POST(request: Request) {
   }
 
   const { front, back } = await request.json();
-  if (!front || !back) {
-    return NextResponse.json({ error: "Photos face et dos requises" }, { status: 400 });
+  if (!front) {
+    return NextResponse.json({ error: "Photo de face requise" }, { status: 400 });
   }
 
   try {

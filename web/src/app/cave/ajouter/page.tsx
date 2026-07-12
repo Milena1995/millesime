@@ -31,7 +31,7 @@ export default function AjouterBottlePage() {
       const res = await fetch("/api/ai/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ front, back }),
+        body: JSON.stringify({ front, back: back || undefined }),
       });
       if (!res.ok) throw new Error("Le traitement IA a échoué. Réessayez.");
 
@@ -46,13 +46,13 @@ export default function AjouterBottlePage() {
   }
 
   async function handleProcess() {
-    if (!frontFile || !backFile) return;
+    if (!frontFile) return;
     setStep("processing");
     setError("");
     try {
       const [front, back] = await Promise.all([
         fileToCompressedBase64(frontFile),
-        fileToCompressedBase64(backFile),
+        backFile ? fileToCompressedBase64(backFile) : Promise.resolve(""),
       ]);
       setFrontBase64(front);
       setBackBase64(back);
@@ -65,7 +65,7 @@ export default function AjouterBottlePage() {
 
   /** Relance l'analyse avec les mêmes photos (déjà compressées), sans repasser par la capture. */
   function handleRetry() {
-    if (!frontBase64 || !backBase64) return;
+    if (!frontBase64) return;
     runProcess(frontBase64, backBase64);
   }
 
@@ -80,14 +80,14 @@ export default function AjouterBottlePage() {
   }
 
   async function handleRegenerateImage() {
-    if (!frontBase64 || !backBase64) return;
+    if (!frontBase64) return;
     setRegenerating(true);
     setError("");
     try {
       const res = await fetch("/api/ai/regenerate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ front: frontBase64, back: backBase64 }),
+        body: JSON.stringify({ front: frontBase64, back: backBase64 || undefined }),
       });
       if (!res.ok) throw new Error("La régénération de l'image a échoué. Réessayez.");
       const data = await res.json();
@@ -126,12 +126,16 @@ export default function AjouterBottlePage() {
         <div className="mt-6 flex flex-col gap-6">
           <div className="grid grid-cols-2 gap-4">
             <CaptureBox label="Photo de face" onCapture={setFrontFile} />
-            <CaptureBox label="Photo de dos" onCapture={setBackFile} />
+            <CaptureBox label="Photo de dos" optional onCapture={setBackFile} />
           </div>
+          <p className="text-xs text-taupe">
+            Pas de photo de dos ? Pas de souci : l&apos;IA complètera les infos manquantes
+            (cépage, région...) grâce à une recherche en ligne, à partir de la photo de face.
+          </p>
           {error && <p className="text-sm text-bordeaux">{error}</p>}
           <button
             onClick={handleProcess}
-            disabled={!frontFile || !backFile}
+            disabled={!frontFile}
             className="rounded-md bg-bordeaux px-5 py-2.5 text-sm font-medium text-ivoire hover:bg-bordeaux-dark disabled:opacity-40"
           >
             Analyser la bouteille
