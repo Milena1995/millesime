@@ -15,7 +15,7 @@ export default async function BottleDetailPage({
   if (!bottle) notFound();
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-8">
+    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
       <Link href="/cave" className="mb-6 text-sm text-taupe hover:text-encre">
         ← Retour à la cave
       </Link>

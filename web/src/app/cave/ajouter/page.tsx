@@ -57,8 +57,8 @@ export default function AjouterBottlePage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 py-8">
-      <h1 className="font-serif text-2xl text-bordeaux">Ajouter une bouteille</h1>
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
+      <h1 className="font-serif text-xl text-bordeaux sm:text-2xl">Ajouter une bouteille</h1>
 
       {step === "capture" && (
         <div className="mt-6 flex flex-col gap-6">
