@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     prix,
     note,
     notes,
+    quantite,
     generatedImageBase64,
   }: {
     nom: string;
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
     prix: number | null;
     note: number;
     notes: string | null;
+    quantite: number;
     generatedImageBase64: string;
   } = body;
 
@@ -71,6 +73,7 @@ export async function POST(request: Request) {
       prix,
       note,
       notes,
+      quantite: quantite && quantite >= 1 ? quantite : 1,
       accords_mets_vins,
       image_url: publicUrl,
     })

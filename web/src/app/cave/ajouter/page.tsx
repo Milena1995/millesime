@@ -5,27 +5,29 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CaptureBox from "@/components/CaptureBox";
 import BottleForm, { type BottleFormValues } from "@/components/BottleForm";
-import { fileToBase64 } from "@/lib/image";
+import { fileToCompressedBase64 } from "@/lib/image";
 import type { ExtractedLabelInfo } from "@/lib/types";
 
-type Step = "capture" | "processing" | "review";
+type Step = "capture" | "processing" | "review" | "error";
 
 export default function AjouterBottlePage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("capture");
   const [frontFile, setFrontFile] = useState<File | null>(null);
   const [backFile, setBackFile] = useState<File | null>(null);
+  // Base64 compressés mis en cache après la 1re analyse, pour pouvoir réessayer ou
+  // régénérer l'image sans avoir à retoucher/recompresser les photos.
+  const [frontBase64, setFrontBase64] = useState("");
+  const [backBase64, setBackBase64] = useState("");
   const [generatedImageBase64, setGeneratedImageBase64] = useState("");
   const [extracted, setExtracted] = useState<ExtractedLabelInfo | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleProcess() {
-    if (!frontFile || !backFile) return;
+  async function runProcess(front: string, back: string) {
     setStep("processing");
     setError("");
-
     try {
-      const [front, back] = await Promise.all([fileToBase64(frontFile), fileToBase64(backFile)]);
       const res = await fetch("/api/ai/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -39,7 +41,61 @@ export default function AjouterBottlePage() {
       setStep("review");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue");
-      setStep("capture");
+      setStep("error");
+    }
+  }
+
+  async function handleProcess() {
+    if (!frontFile || !backFile) return;
+    setStep("processing");
+    setError("");
+    try {
+      const [front, back] = await Promise.all([
+        fileToCompressedBase64(frontFile),
+        fileToCompressedBase64(backFile),
+      ]);
+      setFrontBase64(front);
+      setBackBase64(back);
+      await runProcess(front, back);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+      setStep("error");
+    }
+  }
+
+  /** Relance l'analyse avec les mêmes photos (déjà compressées), sans repasser par la capture. */
+  function handleRetry() {
+    if (!frontBase64 || !backBase64) return;
+    runProcess(frontBase64, backBase64);
+  }
+
+  /** Abandonne et repart de zéro sur l'étape de capture. */
+  function handleRetakePhotos() {
+    setFrontFile(null);
+    setBackFile(null);
+    setFrontBase64("");
+    setBackBase64("");
+    setError("");
+    setStep("capture");
+  }
+
+  async function handleRegenerateImage() {
+    if (!frontBase64 || !backBase64) return;
+    setRegenerating(true);
+    setError("");
+    try {
+      const res = await fetch("/api/ai/regenerate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ front: frontBase64, back: backBase64 }),
+      });
+      if (!res.ok) throw new Error("La régénération de l'image a échoué. Réessayez.");
+      const data = await res.json();
+      setGeneratedImageBase64(data.generatedImageBase64);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+    } finally {
+      setRegenerating(false);
     }
   }
 
@@ -90,6 +146,29 @@ export default function AjouterBottlePage() {
         </div>
       )}
 
+      {step === "error" && (
+        <div className="mt-12 flex flex-col items-center gap-4 text-center">
+          <p className="text-sm text-bordeaux">{error}</p>
+          <p className="text-sm text-taupe">
+            Vos deux photos sont conservées, vous pouvez simplement réessayer.
+          </p>
+          <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+            <button
+              onClick={handleRetry}
+              className="rounded-md bg-bordeaux px-5 py-2.5 text-sm font-medium text-ivoire hover:bg-bordeaux-dark"
+            >
+              Réessayer l&apos;analyse
+            </button>
+            <button
+              onClick={handleRetakePhotos}
+              className="rounded-md border border-bordure px-5 py-2.5 text-sm font-medium text-taupe hover:text-encre"
+            >
+              Reprendre les photos
+            </button>
+          </div>
+        </div>
+      )}
+
       {step === "review" && extracted && (
         <div className="mt-6">
           <BottleForm
@@ -97,6 +176,8 @@ export default function AjouterBottlePage() {
             submitLabel="Ajouter à ma cave"
             onSubmit={handleSave}
             onCancel={() => setStep("capture")}
+            onRegenerateImage={handleRegenerateImage}
+            regeneratingImage={regenerating}
             initialValues={{
               nom: extracted.nom ?? "",
               type_vin: extracted.type_vin ?? "Autre",
@@ -106,8 +187,10 @@ export default function AjouterBottlePage() {
               prix: null,
               note: 0,
               notes: "",
+              quantite: 1,
             }}
           />
+          {error && <p className="mt-3 text-sm text-bordeaux">{error}</p>}
         </div>
       )}
     </div>

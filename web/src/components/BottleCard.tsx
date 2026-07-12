@@ -17,6 +17,11 @@ export default function BottleCard({ bottle }: { bottle: Bottle }) {
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-cover transition-transform group-hover:scale-[1.02]"
         />
+        {bottle.quantite > 1 && (
+          <span className="absolute right-2 top-2 rounded-full bg-bordeaux/90 px-2 py-0.5 text-xs font-medium text-ivoire">
+            ×{bottle.quantite}
+          </span>
+        )}
       </div>
       <div className="flex flex-col gap-1 p-3">
         <p className="font-serif text-base leading-tight text-encre">{bottle.nom}</p>

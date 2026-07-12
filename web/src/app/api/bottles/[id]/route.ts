@@ -12,11 +12,21 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   const body = await request.json();
-  const { nom, type_vin, region, millesime, cepage, prix, note, notes } = body;
+  const { nom, type_vin, region, millesime, cepage, prix, note, notes, quantite } = body;
 
   const { data: bottle, error } = await supabase
     .from("bottles")
-    .update({ nom, type_vin, region, millesime, cepage, prix, note, notes })
+    .update({
+      nom,
+      type_vin,
+      region,
+      millesime,
+      cepage,
+      prix,
+      note,
+      notes,
+      quantite: quantite && quantite >= 1 ? quantite : 1,
+    })
     .eq("id", id)
     .select()
     .single();

@@ -15,6 +15,7 @@ create table bottles (
   prix numeric(10, 2),
   note smallint not null default 0 check (note between 0 and 5),
   notes text,
+  quantite integer not null default 1 check (quantite >= 1),
   accords_mets_vins text[] not null default '{}',
   image_url text not null,
   created_at timestamptz not null default now()

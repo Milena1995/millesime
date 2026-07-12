@@ -15,6 +15,7 @@ export type BottleFormValues = {
   prix: number | null;
   note: number;
   notes: string;
+  quantite: number;
 };
 
 type BottleFormProps = {
@@ -23,6 +24,9 @@ type BottleFormProps = {
   submitLabel: string;
   onSubmit: (values: BottleFormValues) => Promise<void>;
   onCancel?: () => void;
+  /** Si fourni, affiche un bouton pour régénérer la photo commerciale (étape de révision). */
+  onRegenerateImage?: () => void;
+  regeneratingImage?: boolean;
 };
 
 export default function BottleForm({
@@ -31,6 +35,8 @@ export default function BottleForm({
   submitLabel,
   onSubmit,
   onCancel,
+  onRegenerateImage,
+  regeneratingImage,
 }: BottleFormProps) {
   const [values, setValues] = useState(initialValues);
   const [saving, setSaving] = useState(false);
@@ -62,6 +68,16 @@ export default function BottleForm({
           alt={values.nom || "Bouteille"}
           className="aspect-[3/4] w-full rounded-lg object-cover"
         />
+        {onRegenerateImage && (
+          <button
+            type="button"
+            onClick={onRegenerateImage}
+            disabled={regeneratingImage}
+            className="mt-2 w-full rounded-md border border-bordure px-3 py-2 text-xs font-medium text-taupe hover:border-or hover:text-or disabled:opacity-60"
+          >
+            {regeneratingImage ? "Régénération..." : "↻ Régénérer la photo"}
+          </button>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-3">
@@ -118,17 +134,32 @@ export default function BottleForm({
           />
         </label>
 
-        <label className="flex w-40 flex-col gap-1 text-sm text-taupe">
-          Prix payé (€)
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            value={values.prix ?? ""}
-            onChange={(e) => update("prix", e.target.value === "" ? null : Number(e.target.value))}
-            className="rounded-md border border-bordure bg-carte px-3 py-2 text-encre focus:border-or focus:outline-none"
-          />
-        </label>
+        <div className="flex gap-3">
+          <label className="flex w-40 flex-col gap-1 text-sm text-taupe">
+            Prix payé (€)
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={values.prix ?? ""}
+              onChange={(e) =>
+                update("prix", e.target.value === "" ? null : Number(e.target.value))
+              }
+              className="rounded-md border border-bordure bg-carte px-3 py-2 text-encre focus:border-or focus:outline-none"
+            />
+          </label>
+          <label className="flex w-28 flex-col gap-1 text-sm text-taupe">
+            Quantité
+            <input
+              type="number"
+              step="1"
+              min="1"
+              value={values.quantite}
+              onChange={(e) => update("quantite", Math.max(1, Number(e.target.value) || 1))}
+              className="rounded-md border border-bordure bg-carte px-3 py-2 text-encre focus:border-or focus:outline-none"
+            />
+          </label>
+        </div>
 
         <div className="flex flex-col gap-1 text-sm text-taupe">
           Note

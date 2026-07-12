@@ -11,6 +11,7 @@ export interface Bottle {
   prix: number | null;
   note: number;
   notes: string | null;
+  quantite: number;
   accords_mets_vins: string[];
   image_url: string;
   created_at: string;
@@ -25,6 +26,7 @@ export interface BottleInput {
   prix: number | null;
   note: number;
   notes: string | null;
+  quantite: number;
   image_url: string;
 }
 

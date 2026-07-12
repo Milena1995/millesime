@@ -56,6 +56,7 @@ export default function BottleDetail({ bottle }: { bottle: Bottle }) {
           prix: current.prix,
           note: current.note,
           notes: current.notes ?? "",
+          quantite: current.quantite,
         }}
       />
     );
@@ -81,6 +82,9 @@ export default function BottleDetail({ bottle }: { bottle: Bottle }) {
         {current.cepage && <p className="text-sm text-taupe">Cépage : {current.cepage}</p>}
         {current.prix != null && (
           <p className="text-sm text-taupe">Prix payé : {current.prix.toFixed(2)} €</p>
+        )}
+        {current.quantite > 1 && (
+          <p className="text-sm text-taupe">{current.quantite} bouteilles en cave</p>
         )}
 
         {current.accords_mets_vins.length > 0 && (
