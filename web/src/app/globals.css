@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --color-ivoire: #f5f1ea;
+  --color-carte: #fbf8f3;
+  --color-bordeaux: #6b2737;
+  --color-bordeaux-dark: #531d2a;
+  --color-or: #b08d57;
+  --color-encre: #2b2521;
+  --color-taupe: #8a7f71;
+  --color-bordure: #dfd5c4;
+}
+
+@theme inline {
+  --color-ivoire: var(--color-ivoire);
+  --color-carte: var(--color-carte);
+  --color-bordeaux: var(--color-bordeaux);
+  --color-bordeaux-dark: var(--color-bordeaux-dark);
+  --color-or: var(--color-or);
+  --color-encre: var(--color-encre);
+  --color-taupe: var(--color-taupe);
+  --color-bordure: var(--color-bordure);
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--color-ivoire);
+  color: var(--color-encre);
+}
