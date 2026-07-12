@@ -37,7 +37,6 @@ export default function CaptureBox({ label, onCapture }: CaptureBoxProps) {
         ref={inputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         className="hidden"
         onChange={handleChange}
       />

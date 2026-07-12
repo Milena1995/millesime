@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CaptureBox from "@/components/CaptureBox";
 import BottleForm, { type BottleFormValues } from "@/components/BottleForm";
@@ -58,6 +59,11 @@ export default function AjouterBottlePage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
+      {step === "capture" && (
+        <Link href="/cave" className="mb-4 text-sm text-taupe hover:text-encre">
+          ← Retour à la cave
+        </Link>
+      )}
       <h1 className="font-serif text-xl text-bordeaux sm:text-2xl">Ajouter une bouteille</h1>
 
       {step === "capture" && (
@@ -90,6 +96,7 @@ export default function AjouterBottlePage() {
             imageUrl={`data:image/jpeg;base64,${generatedImageBase64}`}
             submitLabel="Ajouter à ma cave"
             onSubmit={handleSave}
+            onCancel={() => setStep("capture")}
             initialValues={{
               nom: extracted.nom ?? "",
               type_vin: extracted.type_vin ?? "Autre",
