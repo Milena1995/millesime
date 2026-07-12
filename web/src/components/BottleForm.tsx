@@ -25,7 +25,7 @@ type BottleFormProps = {
   onSubmit: (values: BottleFormValues) => Promise<void>;
   onCancel?: () => void;
   /** Si fourni, affiche un bouton pour régénérer la photo commerciale (étape de révision). */
-  onRegenerateImage?: () => void;
+  onRegenerateImage?: (type_vin: WineType) => void;
   regeneratingImage?: boolean;
 };
 
@@ -71,7 +71,7 @@ export default function BottleForm({
         {onRegenerateImage && (
           <button
             type="button"
-            onClick={onRegenerateImage}
+            onClick={() => onRegenerateImage(values.type_vin)}
             disabled={regeneratingImage}
             className="mt-2 w-full rounded-md border border-bordure px-3 py-2 text-xs font-medium text-taupe hover:border-or hover:text-or disabled:opacity-60"
           >

@@ -128,6 +128,14 @@ Renvoie UNIQUEMENT un objet JSON avec exactement ces clés : nom, type_vin, regi
   }
 }
 
+const LIQUID_COLOR_BY_TYPE: Record<WineType, string> = {
+  Rouge: "un vin rouge, couleur rouge sombre/grenat bien opaque",
+  Blanc: "un vin blanc, couleur jaune pâle/doré clair",
+  Rosé: "un vin rosé, couleur rose saumon",
+  Mousseux: "un vin mousseux, couleur dorée pétillante",
+  Autre: "un vin dont la couleur du liquide doit rester fidèle à la photo d'origine",
+};
+
 /**
  * Régénère une image "commerciale" cohérente de la bouteille à partir des photos face/dos.
  * Prompt template fixe pour garantir un rendu homogène entre toutes les bouteilles (MILL-3).
@@ -135,19 +143,28 @@ Renvoie UNIQUEMENT un objet JSON avec exactement ces clés : nom, type_vin, regi
 export async function generateBottleImage(
   frontImageBase64: string,
   backImageBase64?: string,
+  wineType?: WineType | null,
 ): Promise<string> {
   const ai = client();
 
+  const liquidInstruction =
+    wineType && LIQUID_COLOR_BY_TYPE[wineType]
+      ? `Ce vin est ${LIQUID_COLOR_BY_TYPE[wineType]}.`
+      : "Garde la couleur du liquide fidèle à ce qui est visible sur la/les photo(s) d'origine.";
+
   const prompt = `À partir de ${backImageBase64 ? "ces deux photos (face et dos)" : "cette photo (face)"} d'une vraie bouteille de vin,
 génère une photo de produit commerciale et PHOTORÉALISTE de cette même bouteille
-(garde fidèlement l'étiquette, la forme, la couleur du verre et du liquide — ne
-réinvente pas la bouteille, améliore simplement sa présentation).
+(garde fidèlement l'étiquette, la forme, la couleur du verre — ne réinvente pas la
+bouteille, améliore simplement sa présentation).
 Mise en scène obligatoire, identique à chaque génération :
 - Bouteille centrée, debout, cadrage vertical serré
 - Fond neutre uni ivoire/beige chaud (#F5F1EA)
 - Lumière douce et chaude, légère ombre portée au sol
 - Aucun texte ajouté, aucun élément de décor supplémentaire
-- Style épuré, élégant, cohérent avec une esthétique "chic, sobre, intemporelle"`;
+- Style épuré, élégant, cohérent avec une esthétique "chic, sobre, intemporelle"
+- IMPORTANT : la bouteille doit paraître pleine, remplie de vin jusqu'au goulot, comme
+  une bouteille neuve jamais ouverte. Elle ne doit JAMAIS avoir l'air vide, translucide
+  ou vidée de son contenu. ${liquidInstruction}`;
 
   const parts: Part[] = [
     { text: prompt },

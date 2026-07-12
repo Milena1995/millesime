@@ -17,10 +17,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const [extracted, generatedImageBase64] = await Promise.all([
-      extractLabelInfo(front, back),
-      generateBottleImage(front, back),
-    ]);
+    // On extrait d'abord les infos (type de vin compris) pour pouvoir garantir que la
+    // photo générée montre la bonne couleur de liquide (ex: pas de bouteille "vide" à
+    // l'air d'un blanc alors que c'est un rouge).
+    const extracted = await extractLabelInfo(front, back);
+    const generatedImageBase64 = await generateBottleImage(front, back, extracted.type_vin);
 
     return NextResponse.json({ extracted, generatedImageBase64 });
   } catch (error) {

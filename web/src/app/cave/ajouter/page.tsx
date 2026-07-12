@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import CaptureBox from "@/components/CaptureBox";
 import BottleForm, { type BottleFormValues } from "@/components/BottleForm";
 import { fileToCompressedBase64 } from "@/lib/image";
-import type { ExtractedLabelInfo } from "@/lib/types";
+import type { ExtractedLabelInfo, WineType } from "@/lib/types";
 
 type Step = "capture" | "processing" | "review" | "error";
 
@@ -79,7 +79,7 @@ export default function AjouterBottlePage() {
     setStep("capture");
   }
 
-  async function handleRegenerateImage() {
+  async function handleRegenerateImage(type_vin: WineType) {
     if (!frontBase64) return;
     setRegenerating(true);
     setError("");
@@ -87,7 +87,11 @@ export default function AjouterBottlePage() {
       const res = await fetch("/api/ai/regenerate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ front: frontBase64, back: backBase64 || undefined }),
+        body: JSON.stringify({
+          front: frontBase64,
+          back: backBase64 || undefined,
+          type_vin,
+        }),
       });
       if (!res.ok) throw new Error("La régénération de l'image a échoué. Réessayez.");
       const data = await res.json();

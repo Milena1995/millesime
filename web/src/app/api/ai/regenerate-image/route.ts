@@ -14,13 +14,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
-  const { front, back } = await request.json();
+  const { front, back, type_vin } = await request.json();
   if (!front) {
     return NextResponse.json({ error: "Photo de face requise" }, { status: 400 });
   }
 
   try {
-    const generatedImageBase64 = await generateBottleImage(front, back);
+    const generatedImageBase64 = await generateBottleImage(front, back, type_vin);
     return NextResponse.json({ generatedImageBase64 });
   } catch (error) {
     console.error("Erreur régénération image:", error);
