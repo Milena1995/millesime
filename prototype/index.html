@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Millésime — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F1EA;
+    --card:#FBF8F3;
+    --bordeaux:#6B2737;
+    --bordeaux-dark:#531D2A;
+    --gold:#B08D57;
+    --ink:#2B2521;
+    --taupe:#8A7F71;
+    --border:#DFD5C4;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:#E4DED3;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{font-family:'Playfair Display',serif;}
+
+  /* ---- App shell : phone-ish on mobile, wide on desktop ---- */
+  .app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--bg);
+    position:relative;
+    box-shadow:0 0 40px rgba(0,0,0,.08);
+  }
+  @media (min-width:900px){
+    .app{max-width:100%;}
+  }
+
+  .screen{display:none; padding:24px 20px 90px; animation:fade .25s ease;}
+  .screen.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ---- Top bar ---- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 20px; border-bottom:1px solid var(--border);
+    background:var(--bg); position:sticky; top:0; z-index:5;
+  }
+  .brand{font-family:'Playfair Display',serif; font-size:22px; letter-spacing:.5px; color:var(--bordeaux);}
+  .icon-btn{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--border);
+    background:var(--card); display:flex; align-items:center; justify-content:center; cursor:pointer;
+    color:var(--ink); font-size:16px;
+  }
+
+  /* ---- Buttons ---- */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:13px 22px; border-radius:var(--radius); border:1px solid var(--bordeaux);
+    background:var(--bordeaux); color:#fff; font-family:'Inter'; font-size:15px; font-weight:500;
+    cursor:pointer; width:100%; letter-spacing:.2px;
+  }
+  .btn:active{background:var(--bordeaux-dark);}
+  .btn.secondary{background:transparent; color:var(--bordeaux);}
+  .btn.ghost{background:transparent; color:var(--taupe); border-color:var(--border);}
+  .btn.small{width:auto; padding:9px 16px; font-size:13px;}
+
+  /* ---- Login / splash ---- */
+  #screen-login{display:none; text-align:center; padding-top:22vh;}
+  #screen-login.active{display:block;}
+  .splash-mark{
+    width:64px; height:64px; margin:0 auto 18px; border:1.5px solid var(--gold); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:28px;
+  }
+  .tagline{color:var(--taupe); margin:6px 0 40px; font-size:14px;}
+  .login-form{max-width:320px; margin:0 auto; text-align:left;}
+  .field{margin-bottom:14px;}
+  label{display:block; font-size:12px; color:var(--taupe); margin-bottom:6px; letter-spacing:.3px; text-transform:uppercase;}
+  input[type=email], input[type=text], input[type=number], textarea, select{
+    width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:var(--radius);
+    background:var(--card); font-family:'Inter'; font-size:15px; color:var(--ink);
+  }
+  textarea{resize:vertical; min-height:80px; font-family:'Inter';}
+
+  /* ---- Gallery ---- */
+  .gallery-header{padding:20px; }
+  .gallery-header h1{font-size:26px; margin:0 0 4px;}
+  .gallery-sub{color:var(--taupe); font-size:13px; margin:0;}
+  .filter-bar{display:flex; gap:8px; padding:0 20px 16px; overflow-x:auto;}
+  .filter-bar select{
+    border:1px solid var(--border); background:var(--card); color:var(--ink); font-family:'Inter'; font-size:12.5px;
+    padding:8px 10px; border-radius:20px; cursor:pointer; white-space:nowrap; flex:none; width:auto;
+  }
+  .filter-clear{
+    border:1px solid var(--border); background:transparent; color:var(--taupe); font-family:'Inter'; font-size:12px;
+    padding:8px 12px; border-radius:20px; cursor:pointer; white-space:nowrap; flex:none;
+  }
+  .empty-state{padding:40px 20px; text-align:center; color:var(--taupe); font-size:13.5px;}
+  .grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:4px 20px 20px;
+  }
+  @media (min-width:640px){ .grid{grid-template-columns:repeat(3,1fr);} }
+  @media (min-width:900px){ .grid{grid-template-columns:repeat(4,1fr);} }
+  @media (min-width:1200px){ .grid{grid-template-columns:repeat(5,1fr);} }
+
+  .bottle-card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden; cursor:pointer; transition:transform .15s;
+  }
+  .bottle-card:active{transform:scale(.98);}
+  .bottle-card .thumb{
+    background:linear-gradient(180deg,#EFE8DA,#E4DBC9); display:flex; align-items:center; justify-content:center;
+    aspect-ratio:3/4;
+  }
+  .bottle-card .thumb svg{height:78%;}
+  .bottle-card .info{padding:10px 12px 14px;}
+  .bottle-card .name{font-family:'Playfair Display',serif; font-size:14.5px; line-height:1.25; margin:0 0 2px;}
+  .bottle-card .region{font-size:11.5px; color:var(--taupe); margin:0 0 6px;}
+  .stars{color:var(--gold); font-size:12px; letter-spacing:1px;}
+
+  .fab{
+    position:fixed; right:24px; bottom:28px; width:56px; height:56px; border-radius:50%;
+    background:var(--bordeaux); color:#fff; border:none; font-size:26px; cursor:pointer;
+    box-shadow:0 6px 16px rgba(107,39,55,.35); display:flex; align-items:center; justify-content:center;
+    max-width:480px; margin:0 auto;
+  }
+  @media (min-width:900px){ .fab{right:calc(50% - 560px + 24px);} }
+
+  /* ---- Add flow ---- */
+  .step-header{display:flex; align-items:center; gap:12px; margin-bottom:22px;}
+  .step-header .back{cursor:pointer; font-size:20px; color:var(--taupe);}
+  .step-progress{font-size:12px; color:var(--taupe); text-transform:uppercase; letter-spacing:.4px;}
+
+  .capture-box{
+    border:1.5px dashed var(--border); border-radius:var(--radius); background:var(--card);
+    aspect-ratio:3/4; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px; cursor:pointer; text-align:center; padding:20px;
+  }
+  .capture-box .cam-icon{font-size:34px; color:var(--gold);}
+  .capture-box p{margin:0; color:var(--taupe); font-size:13.5px;}
+  .capture-box.filled{border-style:solid; padding:0; overflow:hidden;}
+  .capture-box.filled .thumb-inner{width:100%; height:100%; background:linear-gradient(180deg,#EFE8DA,#E4DBC9); display:flex; align-items:center; justify-content:center;}
+
+  .step-actions{margin-top:24px; display:flex; flex-direction:column; gap:10px;}
+
+  /* ---- Processing ---- */
+  #screen-processing .proc-wrap{padding-top:18vh; text-align:center;}
+  .spinner{
+    width:52px; height:52px; margin:0 auto 26px; border-radius:50%;
+    border:2px solid var(--border); border-top-color:var(--bordeaux);
+    animation:spin 1s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .proc-wrap h3{margin:0 0 8px;}
+  .proc-wrap p{color:var(--taupe); font-size:13.5px; max-width:280px; margin:0 auto;}
+
+  /* ---- Review / detail ---- */
+  .hero-image{
+    background:linear-gradient(180deg,#EFE8DA,#E4DBC9); border-radius:var(--radius);
+    display:flex; align-items:center; justify-content:center; aspect-ratio:4/5; margin-bottom:20px;
+    border:1px solid var(--border); position:relative;
+  }
+  .hero-image svg{height:82%;}
+  .ai-tag{
+    position:absolute; top:10px; left:10px; background:rgba(43,37,33,.72); color:#F5F1EA;
+    font-size:10px; letter-spacing:.5px; text-transform:uppercase; padding:4px 8px; border-radius:20px;
+  }
+  .star-picker{display:flex; gap:6px; font-size:26px; color:var(--border); margin:6px 0 4px; cursor:pointer;}
+  .star-picker span.active{color:var(--gold);}
+  .detail-row{display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--border); font-size:14px;}
+  .detail-row .k{color:var(--taupe);}
+  .detail-row .v{font-weight:500; text-align:right;}
+  .notes-block{margin-top:14px; padding:14px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); font-size:13.5px; color:var(--ink); line-height:1.5;}
+  .pairing-block{margin-top:16px;}
+  .pairing-block h4{font-family:'Playfair Display',serif; font-size:14.5px; margin:0 0 8px; color:var(--bordeaux);}
+  .pairing-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;}
+  .pairing-list li{
+    font-size:13px; padding:9px 12px; background:var(--card); border:1px solid var(--border);
+    border-radius:var(--radius); color:var(--ink);
+  }
+  .pairing-tag{font-size:10px; color:var(--taupe); text-transform:uppercase; letter-spacing:.4px; margin-top:6px; display:block;}
+  .detail-actions{display:flex; gap:10px; margin-top:22px;}
+  .detail-actions .btn{width:auto; flex:1;}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SCREEN: LOGIN -->
+  <div class="screen active" id="screen-login">
+    <div class="splash-mark">🍷</div>
+    <h1>Millésime</h1>
+    <p class="tagline">Votre cave, capturée avec soin.</p>
+    <div class="login-form">
+      <div class="field">
+        <label>Adresse e-mail</label>
+        <input type="email" placeholder="marie@example.com" value="marie@example.com">
+      </div>
+      <button class="btn" onclick="go('gallery')">Recevoir le lien de connexion</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: GALLERY -->
+  <div class="screen" id="screen-gallery">
+    <div class="topbar">
+      <span class="brand">Millésime</span>
+      <div class="icon-btn" onclick="go('login')">⎋</div>
+    </div>
+    <div class="gallery-header">
+      <h1>Ma cave</h1>
+      <p class="gallery-sub" id="gallery-count">6 bouteilles</p>
+    </div>
+    <div class="filter-bar">
+      <select id="filter-type" onchange="applyFilters()"></select>
+      <select id="filter-year" onchange="applyFilters()"></select>
+      <select id="filter-note" onchange="applyFilters()">
+        <option value="">Note</option>
+        <option value="5">★★★★★</option>
+        <option value="4">★★★★+</option>
+        <option value="3">★★★+</option>
+      </select>
+      <button class="filter-clear" onclick="clearFilters()">Effacer</button>
+    </div>
+    <div class="grid" id="gallery-grid"></div>
+    <button class="fab" onclick="startAdd()">+</button>
+  </div>
+
+  <!-- SCREEN: ADD STEP 1 - FRONT -->
+  <div class="screen" id="screen-add1">
+    <div class="step-header">
+      <span class="back" onclick="go('gallery')">←</span>
+      <span class="step-progress">Étape 1 / 2 — Photo de face</span>
+    </div>
+    <div class="capture-box" id="capture-front" onclick="capturePhoto('front')">
+      <div class="cam-icon">📷</div>
+      <p>Toucher pour prendre<br>la photo de l'étiquette avant</p>
+    </div>
+    <div class="step-actions">
+      <button class="btn" id="next-step1" onclick="go('add2')" disabled>Continuer</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: ADD STEP 2 - BACK -->
+  <div class="screen" id="screen-add2">
+    <div class="step-header">
+      <span class="back" onclick="go('add1')">←</span>
+      <span class="step-progress">Étape 2 / 2 — Photo de dos</span>
+    </div>
+    <div class="capture-box" id="capture-back" onclick="capturePhoto('back')">
+      <div class="cam-icon">📷</div>
+      <p>Toucher pour prendre<br>la photo de l'étiquette arrière</p>
+    </div>
+    <div class="step-actions">
+      <button class="btn" onclick="startProcessing()">Générer la fiche</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: PROCESSING -->
+  <div class="screen" id="screen-processing">
+    <div class="proc-wrap">
+      <div class="spinner"></div>
+      <h3 class="serif">Analyse en cours…</h3>
+      <p>Lecture de l'étiquette et régénération de l'image dans le style Millésime.</p>
+    </div>
+  </div>
+
+  <!-- SCREEN: REVIEW FORM -->
+  <div class="screen" id="screen-review">
+    <div class="step-header">
+      <span class="back" onclick="go('add2')">←</span>
+      <span class="step-progress">Vérifier les informations</span>
+    </div>
+    <div class="hero-image">
+      <span class="ai-tag">Image générée par IA</span>
+      <svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="42" y="6" width="16" height="14" rx="2" fill="#B08D57"/>
+        <path d="M44 20 h12 l4 22 c6 8 6 12 6 20 v78 a6 6 0 0 1-6 6 H40 a6 6 0 0 1-6-6 V62 c0-8 0-12 6-20 z" fill="#6B2737"/>
+        <rect x="32" y="82" width="36" height="46" rx="2" fill="#F5F1EA" stroke="#B08D57" stroke-width="1"/>
+        <text x="50" y="100" font-family="Playfair Display, serif" font-size="7" fill="#2B2521" text-anchor="middle">Domaine</text>
+        <text x="50" y="112" font-family="Playfair Display, serif" font-size="6" fill="#8A7F71" text-anchor="middle">de la Colline</text>
+        <text x="50" y="122" font-family="Inter, sans-serif" font-size="6" fill="#8A7F71" text-anchor="middle">2021</text>
+      </svg>
+    </div>
+    <div class="field">
+      <label>Nom / domaine</label>
+      <input type="text" id="f-nom" value="Domaine de la Colline">
+    </div>
+    <div class="field">
+      <label>Type de vin</label>
+      <select id="f-type">
+        <option value="Rouge" selected>Rouge</option>
+        <option value="Blanc">Blanc</option>
+        <option value="Rosé">Rosé</option>
+        <option value="Mousseux">Mousseux / Champagne</option>
+        <option value="Autre">Autre</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Appellation / région</label>
+      <input type="text" id="f-region" value="Côtes du Rhône, France">
+    </div>
+    <div class="field">
+      <label>Millésime</label>
+      <input type="text" id="f-millesime" value="2021">
+    </div>
+    <div class="field">
+      <label>Cépage</label>
+      <input type="text" id="f-cepage" value="Grenache, Syrah">
+    </div>
+    <div class="field">
+      <label>Prix payé</label>
+      <input type="number" id="f-prix" value="28" placeholder="0.00">
+    </div>
+    <div class="field">
+      <label>Note</label>
+      <div class="star-picker" id="review-stars">
+        <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Notes personnelles</label>
+      <textarea id="f-notes" placeholder="Robe grenat, tanins souples, notes de fruits noirs…"></textarea>
+    </div>
+    <div class="step-actions">
+      <button class="btn" onclick="saveBottle()">Enregistrer dans ma cave</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: DETAIL -->
+  <div class="screen" id="screen-detail">
+    <div class="step-header">
+      <span class="back" onclick="go('gallery')">←</span>
+      <span class="step-progress">Fiche bouteille</span>
+    </div>
+    <div class="hero-image">
+      <span class="ai-tag">Image générée par IA</span>
+      <svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="42" y="6" width="16" height="14" rx="2" fill="#B08D57"/>
+        <path d="M44 20 h12 l4 22 c6 8 6 12 6 20 v78 a6 6 0 0 1-6 6 H40 a6 6 0 0 1-6-6 V62 c0-8 0-12 6-20 z" fill="#6B2737"/>
+        <rect x="32" y="82" width="36" height="46" rx="2" fill="#F5F1EA" stroke="#B08D57" stroke-width="1"/>
+        <text x="50" y="100" font-family="Playfair Display, serif" font-size="7" fill="#2B2521" text-anchor="middle">Domaine</text>
+        <text x="50" y="112" font-family="Playfair Display, serif" font-size="6" fill="#8A7F71" text-anchor="middle">de la Colline</text>
+        <text x="50" y="122" font-family="Inter, sans-serif" font-size="6" fill="#8A7F71" text-anchor="middle">2021</text>
+      </svg>
+    </div>
+    <h2 class="serif" id="d-nom" style="margin:0 0 2px;">Domaine de la Colline</h2>
+    <p style="color:var(--taupe); margin:0 0 10px; font-size:13.5px;" id="d-region">Rouge · Côtes du Rhône, France · 2021</p>
+    <div class="stars" id="d-stars" style="font-size:16px; margin-bottom:16px;">★★★★☆</div>
+    <div class="detail-row"><span class="k">Cépage</span><span class="v" id="d-cepage">Grenache, Syrah</span></div>
+    <div class="detail-row"><span class="k">Prix payé</span><span class="v" id="d-prix">28,00 €</span></div>
+    <div class="notes-block" id="d-notes">Robe grenat, tanins souples, notes de fruits noirs…</div>
+    <div class="pairing-block">
+      <h4>Suggestions d'accords mets-vins</h4>
+      <ul class="pairing-list" id="d-pairing">
+        <li>Viande rouge grillée ou en sauce</li>
+        <li>Fromages affinés (comté, cheddar vieilli)</li>
+        <li>Champignons et plats mijotés</li>
+      </ul>
+      <span class="pairing-tag">Généré par IA à partir du type de vin</span>
+    </div>
+    <div class="detail-actions">
+      <button class="btn secondary small" style="flex:1;">Modifier</button>
+      <button class="btn ghost small" style="flex:1;">Supprimer</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const bottleSVG = `<svg viewBox="0 0 100 160" xmlns="http://www.w3.org/2000/svg">
+    <rect x="42" y="6" width="16" height="14" rx="2" fill="#B08D57"/>
+    <path d="M44 20 h12 l4 22 c6 8 6 12 6 20 v78 a6 6 0 0 1-6 6 H40 a6 6 0 0 1-6-6 V62 c0-8 0-12 6-20 z" fill="#6B2737"/>
+    <rect x="32" y="82" width="36" height="46" rx="2" fill="#F5F1EA" stroke="#B08D57" stroke-width="1"/>
+  </svg>`;
+
+  const mockBottles = [
+    {nom:"Domaine de la Colline", type:"Rouge", region:"Côtes du Rhône", millesime:"2021", stars:4},
+    {nom:"Château Vieux Pin", type:"Rouge", region:"Bordeaux", millesime:"2018", stars:5},
+    {nom:"Clos des Terres", type:"Blanc", region:"Bourgogne", millesime:"2020", stars:3},
+    {nom:"Villa Antinori", type:"Rouge", region:"Toscane", millesime:"2019", stars:4},
+    {nom:"Ricasoli", type:"Rosé", region:"Chianti", millesime:"2020", stars:4},
+    {nom:"Maison Brun", type:"Mousseux", region:"Beaujolais", millesime:"2022", stars:3},
+  ];
+
+  const pairingsByType = {
+    "Rouge": ["Viande rouge grillée ou en sauce", "Fromages affinés (comté, cheddar vieilli)", "Champignons et plats mijotés"],
+    "Blanc": ["Poissons et fruits de mer", "Volaille en sauce crémeuse", "Fromages de chèvre frais"],
+    "Rosé": ["Cuisine méditerranéenne, salades", "Charcuterie fine", "Poisson grillé en été"],
+    "Mousseux": ["Apéritif et amuse-bouches", "Fruits de mer, huîtres", "Desserts peu sucrés"],
+    "Autre": ["À accorder selon le profil du vin"]
+  };
+
+  function uniqueSorted(arr){ return [...new Set(arr)].sort(); }
+
+  function populateFilters(){
+    const typeSel = document.getElementById('filter-type');
+    const yearSel = document.getElementById('filter-year');
+    typeSel.innerHTML = '<option value="">Type</option>' + uniqueSorted(mockBottles.map(b=>b.type)).map(t=>`<option value="${t}">${t}</option>`).join('');
+    yearSel.innerHTML = '<option value="">Millésime</option>' + uniqueSorted(mockBottles.map(b=>b.millesime)).sort((a,b)=>b-a).map(y=>`<option value="${y}">${y}</option>`).join('');
+  }
+
+  function renderGallery(list){
+    const grid = document.getElementById('gallery-grid');
+    document.getElementById('gallery-count').textContent = list.length + (list.length > 1 ? ' bouteilles' : ' bouteille');
+    if(list.length === 0){
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">Aucune bouteille ne correspond à ces filtres.</div>`;
+      return;
+    }
+    grid.innerHTML = list.map(b => `
+      <div class="bottle-card" onclick="go('detail')">
+        <div class="thumb">${bottleSVG}</div>
+        <div class="info">
+          <p class="name">${b.nom}</p>
+          <p class="region">${b.type} · ${b.region} · ${b.millesime}</p>
+          <div class="stars">${'★'.repeat(b.stars)}${'☆'.repeat(5-b.stars)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function applyFilters(){
+    const type = document.getElementById('filter-type').value;
+    const year = document.getElementById('filter-year').value;
+    const minNote = parseInt(document.getElementById('filter-note').value) || 0;
+    const filtered = mockBottles.filter(b =>
+      (!type || b.type === type) &&
+      (!year || b.millesime === year) &&
+      (b.stars >= minNote)
+    );
+    renderGallery(filtered);
+  }
+
+  function clearFilters(){
+    document.getElementById('filter-type').value = '';
+    document.getElementById('filter-year').value = '';
+    document.getElementById('filter-note').value = '';
+    renderGallery(mockBottles);
+  }
+
+  populateFilters();
+  renderGallery(mockBottles);
+
+  const screens = ['login','gallery','add1','add2','processing','review','detail'];
+  function go(name){
+    screens.forEach(s => document.getElementById('screen-'+s).classList.remove('active'));
+    document.getElementById('screen-'+name).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function startAdd(){
+    document.getElementById('capture-front').classList.remove('filled');
+    document.getElementById('capture-front').innerHTML = `<div class="cam-icon">📷</div><p>Toucher pour prendre<br>la photo de l'étiquette avant</p>`;
+    document.getElementById('capture-back').classList.remove('filled');
+    document.getElementById('capture-back').innerHTML = `<div class="cam-icon">📷</div><p>Toucher pour prendre<br>la photo de l'étiquette arrière</p>`;
+    document.getElementById('next-step1').disabled = true;
+    go('add1');
+  }
+
+  function capturePhoto(which){
+    const el = document.getElementById('capture-'+which);
+    el.classList.add('filled');
+    el.innerHTML = `<div class="thumb-inner">${bottleSVG}</div>`;
+    if(which === 'front'){ document.getElementById('next-step1').disabled = false; }
+  }
+
+  function startProcessing(){
+    go('processing');
+    setTimeout(() => go('review'), 1600);
+  }
+
+  // star picker on review screen
+  const reviewStars = document.querySelectorAll('#review-stars span');
+  reviewStars.forEach(s => {
+    s.addEventListener('click', () => {
+      const v = parseInt(s.dataset.v);
+      reviewStars.forEach(x => x.classList.toggle('active', parseInt(x.dataset.v) <= v));
+    });
+  });
+  // default 4 stars pre-selected
+  reviewStars.forEach(x => x.classList.toggle('active', parseInt(x.dataset.v) <= 4));
+
+  function saveBottle(){
+    const type = document.getElementById('f-type').value;
+    document.getElementById('d-nom').textContent = document.getElementById('f-nom').value;
+    document.getElementById('d-region').textContent = type + ' · ' + document.getElementById('f-region').value + ' · ' + document.getElementById('f-millesime').value;
+    document.getElementById('d-cepage').textContent = document.getElementById('f-cepage').value;
+    document.getElementById('d-prix').textContent = document.getElementById('f-prix').value + ' €';
+    document.getElementById('d-notes').textContent = document.getElementById('f-notes').value || '—';
+    const pairings = pairingsByType[type] || pairingsByType['Autre'];
+    document.getElementById('d-pairing').innerHTML = pairings.map(p => `<li>${p}</li>`).join('');
+    go('detail');
+  }
+</script>
+
+</body>
+</html>
