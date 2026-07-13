@@ -33,6 +33,12 @@ export default async function CavePage({ searchParams }: CavePageProps) {
         <h1 className="truncate font-serif text-xl text-bordeaux sm:text-2xl">Millésime</h1>
         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           <Link
+            href="/credits"
+            className="rounded-full px-2.5 py-1.5 text-xs font-medium text-taupe hover:bg-carte hover:text-encre sm:text-sm"
+          >
+            Crédits
+          </Link>
+          <Link
             href="/cave/ajouter"
             aria-label="Ajouter une bouteille"
             className="flex items-center justify-center gap-2 rounded-full bg-bordeaux p-2.5 text-ivoire hover:bg-bordeaux-dark sm:rounded-md sm:px-4 sm:py-2 sm:text-sm sm:font-medium"
