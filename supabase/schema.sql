@@ -61,3 +61,7 @@ create policy "Upload de ses propres images"
 create policy "Suppression de ses propres images"
   on storage.objects for delete
   using (bucket_id = 'bottle-images' and auth.role() = 'authenticated');
+
+-- Crédits IA : voir supabase/migrations/0002_credits_ia.sql pour le détail (table
+-- profiles, trigger de création automatique, fonctions consume/refund_ai_credit).
+-- Pour une installation neuve, exécute aussi ce fichier de migration après ce schéma.

@@ -25,6 +25,7 @@ export async function POST(request: Request) {
     notes,
     quantite,
     generatedImageBase64,
+    viaAI,
   }: {
     nom: string;
     type_vin: WineType;
@@ -36,6 +37,9 @@ export async function POST(request: Request) {
     notes: string | null;
     quantite: number;
     generatedImageBase64: string;
+    /** true si la bouteille vient du flux IA (photo générée + accords auto), false en
+     * mode manuel (photo perso, pas d'appel Gemini supplémentaire). */
+    viaAI?: boolean;
   } = body;
 
   if (!nom || !type_vin || !generatedImageBase64) {
@@ -57,9 +61,11 @@ export async function POST(request: Request) {
     data: { publicUrl },
   } = supabase.storage.from("bottle-images").getPublicUrl(path);
 
-  const accords_mets_vins = await generatePairingSuggestions(type_vin, cepage, region).catch(
-    () => [],
-  );
+  // En mode manuel (sans IA), on ne fait aucun appel Gemini supplémentaire : pas
+  // d'accords mets-vins automatiques (pas de coût, pas de crédit consommé).
+  const accords_mets_vins = viaAI
+    ? await generatePairingSuggestions(type_vin, cepage, region).catch(() => [])
+    : [];
 
   const { data: bottle, error: insertError } = await supabase
     .from("bottles")
